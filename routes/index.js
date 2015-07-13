@@ -4,6 +4,7 @@
  */
 var crypto=require('crypto'),
 User=require('../models/user.js');
+Post=require('../models/post.js');
 
 //页面权限控制
 function checkLogin(req,res,next){
@@ -23,11 +24,17 @@ function checkNoLogin(req,res,next){
 
 module.exports=function(app){
 	app.get('/',function(req,res){
-		res.render('index',{
-			title:'首页',
-			user:req.session.user,
-			success:req.flash('success').toString(),
-			error:req.flash('error').toString()
+		Post.get(null,function(err,posts){
+			if(err){
+				posts=[];
+			}
+			res.render('index',{
+			  title:'主页',
+			  posts:posts,
+			  user:req.session.user,
+			  success:req.flash('success').toString(),
+			  error:req.flash('error').toString()
+		    });
 		});
 	});
 	app.get('/reg',checkNoLogin);
@@ -114,7 +121,18 @@ module.exports=function(app){
 			error:req.flash('error').toString()
 		});
 	});
+	app.post('/post',checkLogin);
 	app.post('/post',function(req,res){
+		var currentUser=req.session.user,
+		post=new Post(currentUser.name,req.body.title,req.body.post);
+		post.save(function(err){
+			if(err){
+				req.flash('error',err);
+				return res.redirect('/');
+			}
+			req.flash('success','发布成功');
+			res.redirect('/');
+		});
 	});
 	app.get('/logout',function(req,res){
 		req.session.user=null;
