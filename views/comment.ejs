@@ -5,17 +5,16 @@
 	</p>
 	<p><%-comment.content%></p>
 <%});%>
-
 <form method="post">
 <%if(user){%>
-	姓名：<input type="text" name="name" value="<%=user.name%>"><br/>
-	邮箱：<input type="text" name="email" value="<%=user.email%>"><br/>
+	姓名：<input type="text" name="name" value="<%=user.name%>">
+	邮箱：<input type="text" name="email" value="<%=user.email%>">
 	网址：<input type="text" name="website" value="/u/<%=user.name%>"><br/>
 <%}else{%>
-	姓名：<input type="text" name="name"><br/>
-	邮箱：<input type="text" name="email"><br/>
+	姓名：<input type="text" name="name">
+	邮箱：<input type="text" name="email">
 	网址：<input type="text" name="website" value="http://"><br/>
 <%}%>
-<textarea name="content" rows="5" clos="80"></textarea>
+<textarea name="content" rows="5" cols="100"></textarea>
 <input type="submit" value="留言">
 </form>

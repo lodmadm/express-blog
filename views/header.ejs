@@ -6,23 +6,100 @@
 <title>Blog</title>
 <meta name="description" content="">
 <meta name="keywords" content="">
-<link href="" rel="stylesheet">
+<link href="http://localhost/stylesheets/amazeui.min.css" rel="stylesheet">
+<script type="text/javascript" src="http://localhost/scripts/jquery.min.js"></script>
+<script type="text/javascript" src="http://localhost/scripts/amazeui.min.js"></script>
+<style>
+@media only screen and (min-width: 1200px) {
+      .blog-g-fixed {
+        max-width: 1200px;
+      }
+    }
+
+    @media only screen and (min-width: 641px) {
+      .blog-sidebar {
+        font-size: 1.4rem;
+      }
+    }
+
+    .blog-main {
+      padding: 20px 0;
+    }
+
+    .blog-title {
+      margin: 10px 0 20px 0;
+    }
+
+    .blog-meta {
+      font-size: 14px;
+      margin: 10px 0 20px 0;
+      color: #222;
+    }
+
+    .blog-meta a {
+      color: #27ae60;
+    }
+
+    .blog-pagination a {
+      font-size: 1.4rem;
+    }
+
+    .blog-team li {
+      padding: 4px;
+    }
+
+    .blog-team img {
+      margin-bottom: 0;
+    }
+
+    .blog-content img,
+    .blog-team img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .blog-footer {
+      padding: 10px 0;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <header>
-    	<h1><%=title%></h1>
-    </header>
-    <nav>
-    	<span><a title="主页" href="/">主页</a></span>
-    	<% if(user){ %>
-          <span><a href="/upload" title="上传">上传</a></span>
-    	  <span><a href="/post" title="发表">发表</a></span>
-    	  <span><a href="/logout" title="登出">登出</a></span>
-    	<% }else{ %>
-    	  <span><a title="登录" href="/login">登录</a></span>
-    	  <span><a title="注册" href="/reg">注册</a></span>
-    	<% } %>
-    </nav>
+    <header class="am-topbar">
+  <h1 class="am-topbar-brand">
+    <a href="#">Amaze UI</a>
+  </h1>
+
+  <button class="am-topbar-btn am-topbar-toggle am-btn am-btn-sm am-btn-success am-show-sm-only" data-am-collapse="{target: '#doc-topbar-collapse'}"><span class="am-sr-only">导航切换</span> <span class="am-icon-bars"></span></button>
+
+  <div class="am-collapse am-topbar-collapse" id="doc-topbar-collapse">
+    <ul class="am-nav am-nav-pills am-topbar-nav">
+      <li class="am-active"><a href="/">首页</a></li>
+      <%if(user){%>
+      <li><a href="/upload">上传</a></li>
+      <li><a href="/post">发表</a></li>
+      <li><a href="/logout">登出</a></li>
+      <%}%>
+    </ul>
+
+    <form class="am-topbar-form am-topbar-left am-form-inline" role="search">
+      <div class="am-form-group">
+        <input type="text" class="am-form-field am-input-sm" placeholder="搜索">
+      </div>
+    </form>
+    <%if(!user){%>
+    <div class="am-topbar-right">
+      <div class="am-dropdown" data-am-dropdown="{boundary: '.am-topbar'}">
+        <button class="am-btn am-btn-secondary am-topbar-btn am-btn-sm am-dropdown-toggle" data-am-dropdown-toggle>登陆<span class="am-icon-caret-down"></span></button>
+        <ul class="am-dropdown-content">
+          <li><a href="/login">登陆</a></li>
+          <li><a href="/reg">注册</a></li>
+        </ul>
+      </div>
+    </div>
+   <%}%>
+  </div>
+</header>
     <article>
     <% if(success){ %>
       <div><%=success%></div>
