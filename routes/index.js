@@ -3,8 +3,10 @@
  * GET home page.
  */
 var crypto=require('crypto'),
-User=require('../models/user.js');
-Post=require('../models/post.js');
+fs=require('fs'),
+User=require('../models/user.js'),
+Post=require('../models/post.js'),
+Comment=require('../models/comment.js');
 
 //页面权限控制
 function checkLogin(req,res,next){
@@ -24,13 +26,17 @@ function checkNoLogin(req,res,next){
 
 module.exports=function(app){
 	app.get('/',function(req,res){
-		Post.get(null,function(err,posts){
+		var page=req.query.p?req.query.p*1:1;
+		Post.getTen(null,page,function(err,posts,total){
 			if(err){
 				posts=[];
 			}
 			res.render('index',{
 			  title:'主页',
 			  posts:posts,
+			  page:page,
+			  isFirstPage:(page-1)==0,
+			  isLastPage:((page-1)*10+posts.length)==total,
 			  user:req.session.user,
 			  success:req.flash('success').toString(),
 			  error:req.flash('error').toString()
@@ -62,7 +68,7 @@ module.exports=function(app){
 		var newUser=new User({
 			name:req.body.name,
 			password:password,
-			emial:req.body.email
+			email:req.body.email
 		});
 		//检查用户是否存在
 		User.get(newUser.name,function(err,user){
@@ -97,13 +103,13 @@ module.exports=function(app){
 	  var password=md5.update(req.body.password).digest('hex');
 	  //检查用户是否存在
       User.get(req.body.name,function(err,user){
-      	if(err){
-      		err.flash('error','用户名不存在！');
+      	if(err || user===null){
+      		req.flash('error','用户名不存在！');
       		return res.redirect('/login');
       	}
       	//检查密码是否一致
-      	if(password!=user.password){
-      		err.flash('error','密码！');
+      	if(user.password!=password){
+      		req.flash('error','密码错误！');
       		return res.redirect('/login');
       	}
       	//用户名和密码匹配后，将用户信息存入session
@@ -138,5 +144,134 @@ module.exports=function(app){
 		req.session.user=null;
 		req.flash('success','登出成功');
 		res.redirect('/');
+	});
+	app.get('/upload',checkLogin);
+	app.get('/upload',function(req,res){
+		res.render('upload',{
+			title:'文件上传',
+			user:req.session.user,
+			success:req.flash('success').toString(),
+			error:req.flash('error').toString()
+		});
+	});
+	app.post('/upload',checkLogin);
+	app.post('/upload',function(req,res){
+		for(var i in req.files){
+			if(req.files[i].size==0){
+				//使用同步方法删除一个文件
+				fs.unlinkSync(req.files[i].path);
+				console.log('删除文件成功');
+			}else{
+				var target_path='./public/images/'+req.files[i].name;
+				//使用同步方式重命名一个文件
+				fs.renameSync(req.files[i].path,target_path);
+				console.log('文件重命名成功');
+			}
+		}
+		req.flash('success','上传成功');
+		res.redirect('/upload');
+	});
+	app.get('/u/:name',function(req,res){
+		var page=req.query.p?req.query.p*1:1;
+		//检查用户名是否存在
+		User.get(req.params.name,function(err,user){
+			if(!user){
+				req.flash('error','用户名不存在');
+				return res.redirect('/');
+			}
+			Post.getTen(user.name,page,function(err,posts,total){
+				if(err){
+					req.flash('error',err);
+					return res.redirect('/');
+				}
+				res.render('user',{
+					title:user.name,
+					posts:posts,
+					page:page,
+					isFirstPage:(page-1)==0,
+					isLastPage:((page-1)*10+posts.length)==total,
+					user:req.session.user,
+					success:req.flash('success').toString(),
+					error:req.flash('error').toString()
+				});
+			});
+		})
+	});
+	app.get('/u/:name/:day/:title',function(req,res){
+		Post.getOne(req.params.name,req.params.day,req.params.title,function(err,post){
+			if(err){
+				req.flash('error',err);
+				return res.redirect('/');
+			}
+			res.render('article',{
+				title:req.params.title,
+				post:post,
+				user:req.session.user,
+				success:req.flash('success').toString(),
+				error:req.flash('error').toString()
+			});
+		});
+	});
+	app.post('/u/:name/:day/:title',function(req,res){
+		var date=new Date(),
+		    time=date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()+" "+date.getHours()+':'+(date.getMinutes()<10 ? ('0' +date.getMinutes()):date.getMinutes());
+		var comment={
+			name:req.body.name,
+			email:req.body.email,
+			website:req.body.website,
+			time:time,
+			content:req.body.content
+		};
+		var newComment=new Comment(req.params.name,req.params.day,req.params.title,comment);
+		newComment.save(function(err){
+			if(err){
+				req.flash('error',err);
+				return res.redirect('back');
+			}
+			req.flash('success','留言成功');
+			res.redirect('back');
+		});
+	});
+	app.get('/edit/:name/:day/:title',checkLogin);
+	app.get('/edit/:name/:day/:title',function(req,res){
+		var currentUser=req.session.user;
+		Post.edit(currentUser.name,req.params.day,req.params.title,function(err,post){
+			if(err){
+				req.flash('error',err);
+				return res.redirect('back');
+			}
+			res.render('edit',{
+				title:'编辑',
+				post:post,
+				user:req.session.user,
+				success:req.flash('success').toString(),
+				error:req.flash('error').toString()
+			});
+		});
+	});
+	app.post('/edit/:name/:day/:title',checkLogin);
+	app.post('/edit/:name/:day/:title',function(req,res){
+		var currentUser=req.session.user;
+		Post.update(currentUser.name,req.params.day,req.params.title,req.body.post,function(err){
+			var url='/u/'+req.params.name+'/'+req.params.day+'/'+req.params.title;
+			if(err){
+				req.flash('error',err);
+				return res.redirect(url);
+			}
+			req.flash('success','修改成功');
+			res.redirect(url);
+		});
+	});
+	app.get('/remove/:name/:day/:title',checkLogin);
+	app.get('/remove/:name/:day/:title',function(req,res){
+		var currentUser=req.session.user;
+		Post.remove(currentUser.name,req.params.day,req.params.title,function(err){
+			if(err){
+				req.flash('error',err);
+				return res.redirect('back');
+			}
+			req.flash('success','删除成功');
+			res.redirect('/');
+		});
 	});
 };
