@@ -4,12 +4,13 @@
       <h3 class="am-article-title blog-title">
         <a href="/u/<%=post.name%>/<%=post.time.day%>/<%=post.title%>"><%=post.title%></a>
       </h3>
-      <h4 class="am-article-meta blog-meta">by <a href="/u/<%=post.name%>"><%=post.name%></a> posted on <%=post.time.day%></h4>
-      <div class="am-g blog-content">
+      <h4 class="am-article-meta blog-meta">作者：<a href="/u/<%=post.name%>"><%=post.name%></a> | 时间：<%=post.time.day%><a class="am-margin-left" href="/edit/<%=post.name%>/<%=post.time.day%>/<%=post.title%>">编辑</a><a class="am-margin-left" href="/remove/<%=post.name%>/<%=post.time.day%>/<%=post.title%>">删除</a></h4>
+      <div class="am-g blog-content" style="word-break: break-all;text-indent:2rem;">
         <%-post.post%>
       </div>
     </article>
     <hr class="am-article-divider blog-hr">
+    <%-include comments%>
   </div>
   <div class="am-u-md-4">
     <%-include comment%>

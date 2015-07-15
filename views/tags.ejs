@@ -1,0 +1,7 @@
+<%-include header%>
+<ul>
+  <%posts.forEach(function(tag,index){%>
+    <li><a href="/tags/<%=tag%>"><%=tag%></a></li>
+  <%});%>
+</ul>
+<%-include footer%>
