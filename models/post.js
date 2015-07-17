@@ -330,7 +330,7 @@ Post.search=function(keyword,callback){
 				return callback(err);
 				mongodb.close();
 			}
-			var pattern=new RegExp('^.*'+pattern+'.*$','i');
+			var pattern=new RegExp('^.*'+keyword+'.*$','i');
 			collection.find({
 				"title":pattern
 			},{

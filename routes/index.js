@@ -25,6 +25,10 @@ function checkNoLogin(req,res,next){
 }
 
 module.exports=function(app){
+	//404页面
+    app.use(function(res,res){
+	   res.render("404");
+    });
 	app.get('/',function(req,res){
 		var page=req.query.p?req.query.p*1:1;
 		Post.getTen(null,page,function(err,posts,total){
@@ -224,7 +228,7 @@ module.exports=function(app){
 				res.redirect('/');
 			}
 			res.render('search',{
-				title:'SEARCH'+req.query.keyword,
+				title:'SEARCH:'+req.query.keyword,
 				posts:posts,
 				user:req.session.user,
 				success:req.flash('success').toString(),
